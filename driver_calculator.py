@@ -1,3 +1,11 @@
-from classes.parser import parse_mapping
+from classes.parser import *
+import networkx as nx
 
-parse_mapping("./mappings/mapping1.txt", None)
+# config = parse_config("./CONFIG.txt")
+parse_rbc_csvs("./rbc_transaction_csvs")
+
+# mapping_graph = nx.MultiDiGraph()
+# parse_mapping("./mappings/mapping1.txt", mapping_graph)
+
+# for a, b, _ in mapping_graph.edges:
+#     print(mapping_graph.nodes[a], mapping_graph.nodes[b])
