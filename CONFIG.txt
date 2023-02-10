@@ -1,3 +1,6 @@
+
+# ***************** TRANSACTION-FILE BASED CONFIGURATIONS *****************
+
 # The target month and year of transactions
 MONTH=JANUARY
 YEAR=2023
@@ -8,8 +11,17 @@ DATE_LABEL=Transaction Date
 COST_LABEL=CAD$
 DESCRIPTION_LABEL=Description 2
 
+# If description 2 is empty, what do we use?
+DESCRIPTION_FALLBACK_LABEL=Description 1
+
+# The transactions whose description, if seen (EXACTLY), falls back to description 2
+FALLBACKS=["CANADA "] 
+
 # The MM and YYYY will be used to aggregate by month and year
 DATE_FORMAT=MM/DD/YYYY
 
 # Can be CHEQUING, VISA
 ACCOUNT_TYPE=Chequing
+
+
+# ***************** VISUALIZATION-BASED CONFIGURATIONS *****************

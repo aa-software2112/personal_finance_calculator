@@ -2,7 +2,7 @@ from glob import glob
 from os import path
 MAPPING_CONNECTOR = "->"
 CONFIG_DELIMITER = "="
-handle_comment = lambda comment: print(f"[COMMENT] {comment}")
+handle_comment = lambda comment: None
 
 month_to_num = {"january": 1,
                 "february": 2,
@@ -54,11 +54,13 @@ def parse_mapping(mapping_filename, mapping_graph):
         elif len(line) == 0 or len(line.strip()) == 0: # empty line
             continue
         else: # Possibly a regular line
-            assert MAPPING_CONNECTOR in line, f"[LINE {index - 1}] each mapping should have at least one connector"
+            assert MAPPING_CONNECTOR in line, f"[LINE {index}] each mapping should have at least one connector"
             connections = line.split(MAPPING_CONNECTOR)
+            assert len(connections) == len(set(connections)), f"[LINE {index}] Transaction and categories should be unique... {line}"
             for c in range(len(connections) - 1):
                 from_node = connections[c + 1]
                 to_node = connections[c]
+                
                 # if c == 0: # Most detailed category should have a list for later object storage
                     # mapping_graph.add_node(to_node, data)
                 mapping_graph.add_nodes_from([from_node, to_node], listing=[])
@@ -81,11 +83,15 @@ def parse_config(config_filename):
 
         assert CONFIG_DELIMITER in line, f"[DELIMIER] The character {CONFIG_DELIMITER} should appear in {line}"
         k, v = line.split("=")
+        k = k.strip()
+        v = v.strip()
         assert not (CONFIG_DELIMITER in v), f"[DELIMITER] Do not put {CONFIG_DELIMITER} in RHS of {line}"
+        if v.startswith("["):
+            v = eval(v)
         config[k] = v
     return config 
 
-def parse_rbc_csvs(csv_folder, config):
+def parse_transactions(csv_folder, config):
     csvs = glob(path.join(csv_folder, "*.csv"))
     
     dmy = config['DATE_FORMAT'].lower().split("/")
@@ -106,12 +112,14 @@ def parse_rbc_csvs(csv_folder, config):
     date_label = config['DATE_LABEL']
     cost_label = config['COST_LABEL']
     description_label = config['DESCRIPTION_LABEL']
+    description_fallback_label = config['DESCRIPTION_FALLBACK_LABEL']
     account_type = config['ACCOUNT_TYPE']
 
     account_label_idx = -1
     date_label_idx = -1
     cost_label_idx = -1
     description_label_idx = -1
+    description_fallback_label_idx = -1
     
     kept_data = []
 
@@ -130,12 +138,14 @@ def parse_rbc_csvs(csv_folder, config):
                     cost_label_idx = c
                 elif cols[c] == description_label:
                     description_label_idx = c
+                elif cols[c] == description_fallback_label:
+                    description_fallback_label_idx = c
 
             assert account_label_idx != -1 and date_label_idx != -1 \
-                and cost_label_idx != -1 and description_label_idx != -1 , \
+                and cost_label_idx != -1 and description_label_idx != -1 and description_fallback_label_idx != -1, \
                     "[CONFIG] Could not find index for one of the four key labels. See CONFIG.TXT " \
                         f"ACCOUNT: {account_label_idx}, DATE: {date_label_idx}, COST: {cost_label_idx} " \
-                            f"DESCRIPTION: {description_label_idx}"
+                            f"DESCRIPTION: {description_label_idx}, DESCRIPTION FALLBACK: {description_fallback_label_idx}"
 
             for i in range(1, len(lines)):
                 line = lines[i].strip().replace("\"", "").split(",")
@@ -146,13 +156,18 @@ def parse_rbc_csvs(csv_folder, config):
 
                 cost = line[cost_label_idx]
                 description = line[description_label_idx]
+                description_fallback = line[description_fallback_label_idx]
+                assert len(description) > 0 or len(description_fallback) > 0, f"[DESCRIPTION] Line[{i+1}] {lines[i]} missing description"
                 if account == account_type and month == trans_month and year == trans_year:
+                    desc = description if len(description) > 0 else description_fallback
+                    desc = description_fallback if desc in config['FALLBACKS'] else desc
+                    desc = desc.strip()
                     kept_data.append({
                         "account": account,
                         "date": {"month": month,
                                 "year": year},
                         "cost": float(cost),
-                        "description": description
+                        "description": desc
                     })
     return kept_data
 
