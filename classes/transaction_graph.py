@@ -1,3 +1,5 @@
+import ahocorasick
+
 
 class TransactionGraph:
 
@@ -5,6 +7,8 @@ class TransactionGraph:
         self.g = empty_graph
         self.data = data_to_fill_graph
         self.leaves_categories = self._get_leaves()
+        self.aho = ahocorasick.Automaton()
+        self._setup_aho()
     
     def _get_leaves(self):
         leaves = []
@@ -12,3 +16,13 @@ class TransactionGraph:
             if self.g.out_degree[node] == 0:
                 leaves.append(node)
         return leaves
+
+    def _setup_aho(self):
+        for category in self.leaves_categories:
+            self.aho.add_word(category, category)
+        self.aho.make_automaton()
+
+    def search_category(self, v):
+        ret = [v[1] for v in list(self.aho.iter(v))]
+        assert len(ret) <= 1, f"[AHO] The search for {v} returned multiple entries... {ret}. Only 0 or 1 should match. Fix Mapping"
+        return ret
