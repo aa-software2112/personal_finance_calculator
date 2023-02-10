@@ -63,7 +63,8 @@ def parse_mapping(mapping_filename, mapping_graph):
                 
                 # if c == 0: # Most detailed category should have a list for later object storage
                     # mapping_graph.add_node(to_node, data)
-                mapping_graph.add_nodes_from([from_node, to_node], listing=[])
+                mapping_graph.add_node(from_node, transactions=[])
+                mapping_graph.add_node(to_node, transactions=[])                
                 mapping_graph.add_edge(from_node, to_node)
 
 def parse_config(config_filename):
@@ -163,6 +164,7 @@ def parse_transactions(csv_folder, config):
                     desc = description_fallback if desc in config['FALLBACKS'] else desc
                     desc = desc.strip()
                     kept_data.append({
+                        "id": i,
                         "account": account,
                         "date": {"month": month,
                                 "year": year},

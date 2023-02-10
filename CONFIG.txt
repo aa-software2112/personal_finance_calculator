@@ -2,7 +2,7 @@
 # ***************** TRANSACTION-FILE BASED CONFIGURATIONS *****************
 
 # The target month and year of transactions
-MONTH=JANUARY
+MONTH=FEBRUARY
 YEAR=2023
 
 # For transaction CSVs
@@ -25,3 +25,9 @@ ACCOUNT_TYPE=Chequing
 
 
 # ***************** VISUALIZATION-BASED CONFIGURATIONS *****************
+# Can display ROOT CATEGORIES ONLY (DISPLAY_STYLE=ROOTS), which are the most general, and are the
+# ones encountered last in a mapping of a->b->c (root=c)
+# We have the option of displaying ALL (DISPLAY_STYLE=ALL), which will include redundant information
+# where each a, b, and c will have their transactions listed, where c will show all from (a, b), and b 
+# will show all from (a), and a will show itself
+DISPLAY_STYLE=ROOTS
