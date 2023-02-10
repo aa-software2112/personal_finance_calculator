@@ -146,9 +146,7 @@ def parse_rbc_csvs(csv_folder, config):
 
                 cost = line[cost_label_idx]
                 description = line[description_label_idx]
-                print(account, account_type, date, trans_month, trans_year, cost, description, month, year)
                 if account == account_type and month == trans_month and year == trans_year:
-                    print("here")
                     kept_data.append({
                         "account": account,
                         "date": {"month": month,
