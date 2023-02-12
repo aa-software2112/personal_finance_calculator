@@ -22,10 +22,11 @@ assert len(undefined) == 0, "The following transactions have undefined category(
 
 tg = TransactionGraph(mapping_graph, transactions, cs)
 
-# Should refactor the display to take the graph and grab what it needs... Display based on "all" or "roots", etc...
 tmap = tg.get_cost_map(config)
 
 display = FinanceDisplay(tmap)
 display.display()
 # for a, b, _ in mapping_graph.edges:
 #     print(a, mapping_graph.nodes[a], b, mapping_graph.nodes[b])
+
+# TODO: Refactor display and graph functionality... Display based on "all" or "roots", etc...

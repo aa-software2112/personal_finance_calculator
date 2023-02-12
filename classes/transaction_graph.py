@@ -31,10 +31,9 @@ class TransactionGraph:
 
     def __init__(self, empty_graph, transactions, category_searcher):
         self.g = empty_graph
-        self.transactions = [Transaction(t) for t in transactions]
+        # Take the unique, THEN put it as a list... Checks and removes dupes
+        self.transactions = list(set([Transaction(t) for t in transactions])) 
         self.leaves_categories = self._get_leaves()
-        # self.aho = ahocorasick.Automaton()
-        # self._setup_aho()
         self.aho = category_searcher
         self._setup_transactions()
 
