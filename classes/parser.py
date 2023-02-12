@@ -169,7 +169,8 @@ def parse_transactions(csv_folder, config):
                         "date": {"month": month,
                                 "year": year},
                         "cost": float(cost),
-                        "description": desc
+                        "description": desc,
+                        "hash": hash(lines[i]) # For line uniqueness
                     })
     return kept_data
 

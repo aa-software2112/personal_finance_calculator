@@ -10,6 +10,13 @@ class Transaction:
         self.date = t['date']
         self.cost = t['cost']
         self.description = t['description']
+        self.hash = t['hash']
+
+    def __hash__(self):
+        return self.hash
+
+    def __eq__(self, __o: object) -> bool:
+        return __o.__hash__() == self.__hash__()
 
     def get_description(self):
         return self.description
@@ -22,19 +29,24 @@ class Transaction:
 
 class TransactionGraph:
 
-    def __init__(self, empty_graph, transactions):
+    def __init__(self, empty_graph, transactions, category_searcher):
         self.g = empty_graph
         self.transactions = [Transaction(t) for t in transactions]
         self.leaves_categories = self._get_leaves()
-        self.aho = ahocorasick.Automaton()
-        self._setup_aho()
+        # self.aho = ahocorasick.Automaton()
+        # self._setup_aho()
+        self.aho = category_searcher
         self._setup_transactions()
+
+    def _search_category(self, v):
+        return self.aho.search_category(v)
 
     def _setup_transactions(self):
         # Put each transaction in its appropriate category based on aho results
         for t in self.transactions:
             desc = t.get_description()
-            leaf_category = self.search_category(desc)
+            print(t, desc)
+            leaf_category = self._search_category(desc)
             assert len(leaf_category) > 0, f"The description {desc} has no category!"
             leaf_category = leaf_category[0]
             self.g.nodes[leaf_category]['transactions'].append(t)
@@ -46,15 +58,15 @@ class TransactionGraph:
                 leaves.append(node)
         return leaves
 
-    def _setup_aho(self):
-        for category in self.leaves_categories:
-            self.aho.add_word(category, category)
-        self.aho.make_automaton()
+    # def _setup_aho(self):
+    #     for category in self.leaves_categories:
+    #         self.aho.add_word(category, category)
+    #     self.aho.make_automaton()
 
-    def search_category(self, v):
-        ret = [v[1] for v in list(self.aho.iter(v))]
-        assert len(ret) <= 1, f"[AHO] The search for {v} returned multiple entries... {ret}. Only 0 or 1 should match. Fix Mapping"
-        return ret
+    # def search_category(self, v):
+    #     ret = [v[1] for v in list(self.aho.iter(v))]
+    #     assert len(ret) <= 1, f"[AHO] The search for {v} returned multiple entries... {ret}. Only 0 or 1 should match. Fix Mapping"
+    #     return ret
 
     def _get_roots(self):
         roots = []
@@ -116,15 +128,3 @@ class TransactionGraph:
             pass
 
         return tmap
-
-
-    @staticmethod
-    def undefined_transactions(transactions, tgraph):
-        undef = []
-        # Returns the transactions that could not be linked to a category
-        for transaction in transactions:
-            description = transaction['description']
-            ret = tgraph.search_category(description)
-            if len(ret) == 0:
-                undef.append(description)
-        return set(undef)
